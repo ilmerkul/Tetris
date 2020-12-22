@@ -1,2 +1,0 @@
-zdarova
-perviy push
