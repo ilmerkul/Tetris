@@ -57,8 +57,6 @@ WORDS = {
     'Exit': 320
 }
 
-StartMenu()
-
 running = True
 menu = StartMenu()
 
