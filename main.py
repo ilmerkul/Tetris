@@ -78,7 +78,7 @@ def start_screen():
     manager_screen = pygame_gui.UIManager(SIZE)
     line = 'Tetris'
 
-    fon = pygame.transform.scale(load_image('data/startScreenBackground.jpg'), (SCREEN_WIDTH, SCREEN_HEIGHT))
+    fon = pygame.transform.scale(load_image('startScreenBackground.jpg'), (SCREEN_WIDTH, SCREEN_HEIGHT))
     screen.blit(fon, (0, 0))
 
     font = pygame.font.Font(None, 100)
