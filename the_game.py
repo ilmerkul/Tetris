@@ -99,7 +99,7 @@ while True:
             side = 'left'
         elif keyboard_keys[pygame.K_RIGHT]:
             side = 'right'
-        elif keyboard_keys[pygame.K_DOWN]:
+        if keyboard_keys[pygame.K_DOWN]:
             side = 'down'
     all_figures.draw(screen)
     all_borders.draw(screen)
