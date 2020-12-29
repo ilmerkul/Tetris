@@ -10,6 +10,10 @@ screen = pygame.display.set_mode(SIZE)
 clock = pygame.time.Clock()
 FPS = 60
 pygame.key.set_repeat(200, 70)
+horizontal_speed = 40
+vertical_speed = 10
+figure_size = 40, 40
+start_pos = 200, 0
 
 all_sprites = pygame.sprite.Group()
 all_figures = pygame.sprite.Group()
@@ -39,22 +43,21 @@ class Figure(pygame.sprite.Sprite):
         super().__init__(all_figures)
         self.image = load_image('alone_sqr.png')
         self.rect = self.image.get_rect()
-        self.rect.size = 40, 40
-        self.rect.x = 200
-        self.rect.y = 0
+        self.rect.size = figure_size
+        self.rect.x, self.rect.y = start_pos
 
     def update(self, *args, **kwargs) -> None:
         if pygame.sprite.groupcollide(
                 all_figures, horizontal_borders, False, False):
             pass
         else:
-            self.rect = self.rect.move(0, 2.5)
+            self.rect = self.rect.move(0, 1)
             if args[0] == 'left' and self.rect.x > 0:
-                self.rect.x -= 40
-            if args[0] == 'right' and self.rect.x < SCREEN_WIDTH // 2 - 41:
-                self.rect.x += 40
+                self.rect.x -= horizontal_speed
+            if args[0] == 'right' and self.rect.x < SCREEN_WIDTH // 2 - 40:
+                self.rect.x += horizontal_speed
             if args[0] == 'down' and self.rect.y < SCREEN_HEIGHT - 55:
-                self.rect.y += 10
+                self.rect.y += vertical_speed
         if pygame.sprite.groupcollide(all_figures, vertical_borders, False, False):
             pass
 
@@ -99,7 +102,7 @@ while True:
             side = 'left'
         elif keyboard_keys[pygame.K_RIGHT]:
             side = 'right'
-        elif keyboard_keys[pygame.K_DOWN]:
+        if keyboard_keys[pygame.K_DOWN]:
             side = 'down'
     all_figures.draw(screen)
     all_borders.draw(screen)
