@@ -48,8 +48,12 @@ class Figure(pygame.sprite.Sprite):
 
     def update(self, *args, **kwargs) -> None:
         if pygame.sprite.groupcollide(
-                all_figures, horizontal_borders, False, False):
-            pass
+                all_figures, horizontal_borders, False, False) or \
+                pygame.sprite.groupcollide(
+                    all_figures, all_sprites, False, False):
+            all_sprites.add(self)
+            all_figures.empty()
+            figure()
         else:
             self.rect = self.rect.move(0, 1)
             if args[0] == 'left' and self.rect.x > 0:
@@ -58,7 +62,7 @@ class Figure(pygame.sprite.Sprite):
                 self.rect.x += horizontal_speed
             if args[0] == 'down' and self.rect.y < SCREEN_HEIGHT - 55:
                 self.rect.y += vertical_speed
-        if pygame.sprite.groupcollide(all_figures, vertical_borders, False, False):
+        if pygame.sprite.groupcollide(all_sprites, vertical_borders, False, False):
             pass
 
 
@@ -89,7 +93,8 @@ def load_image(name, colorkey=None):
     return image
 
 
-Figure()
+figure = Figure
+figure()
 
 while True:
     screen.fill('white')
@@ -104,6 +109,7 @@ while True:
             side = 'right'
         if keyboard_keys[pygame.K_DOWN]:
             side = 'down'
+    all_sprites.draw(screen)
     all_figures.draw(screen)
     all_borders.draw(screen)
     all_figures.update(side)
