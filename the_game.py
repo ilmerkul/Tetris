@@ -10,6 +10,7 @@ screen = pygame.display.set_mode(SIZE)
 clock = pygame.time.Clock()
 FPS = 60
 pygame.key.set_repeat(200, 70)
+
 horizontal_speed = 40
 vertical_speed = 10
 figure_size = 40, 40
@@ -31,6 +32,7 @@ class Border(pygame.sprite.Sprite):
             self.image = pygame.Surface([1, y2 - y1])
             self.mask = pygame.mask.from_surface(self.image)
             self.rect = pygame.Rect(x1, y1, 1, y2 - y1)
+
         else:  # горизонтальная стенка
             self.add(horizontal_borders)
             self.image = pygame.Surface([x2 - x1, 1])
@@ -58,10 +60,13 @@ class Figure(pygame.sprite.Sprite):
             self.rect = self.rect.move(0, 1)
             if args[0] == 'left' and self.rect.x > 0:
                 self.rect.x -= horizontal_speed
+
             if args[0] == 'right' and self.rect.x < SCREEN_WIDTH // 2 - 40:
                 self.rect.x += horizontal_speed
+
             if args[0] == 'down' and self.rect.y < SCREEN_HEIGHT - 55:
                 self.rect.y += vertical_speed
+
         if pygame.sprite.groupcollide(all_sprites, vertical_borders, False, False):
             pass
 
@@ -102,13 +107,18 @@ while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             terminate()
+
         keyboard_keys = pygame.key.get_pressed()
+
         if keyboard_keys[pygame.K_LEFT]:
             side = 'left'
+
         elif keyboard_keys[pygame.K_RIGHT]:
             side = 'right'
+
         if keyboard_keys[pygame.K_DOWN]:
             side = 'down'
+
     all_sprites.draw(screen)
     all_figures.draw(screen)
     all_borders.draw(screen)
