@@ -1,5 +1,7 @@
 import os
 import sys
+from pprint import pprint
+from random import randrange
 
 import pygame
 import pygame_gui
@@ -11,6 +13,16 @@ screen = pygame.display.set_mode(SIZE)
 clock = pygame.time.Clock()
 manager = pygame_gui.UIManager(SIZE)
 FPS = 60
+
+scale = 30
+W, H = 10, 20
+figuresPos = [[(-1, 0), (-2, 0), (0, 0), (1, 0)],
+              [(0, -1), (-1, -1), (-1, 0), (0, 0)],
+              [(-1, 0), (-1, 1), (0, 0), (0, -1)],
+              [(0, 0), (-1, 0), (0, 1), (-1, -1)],
+              [(0, 0), (0, -1), (0, 1), (-1, -1)],
+              [(0, 0), (0, -1), (0, 1), (1, -1)],
+              [(0, 0), (0, -1), (0, 1), (-1, 0)]]
 
 
 def terminate():
@@ -127,7 +139,7 @@ def start_screen():
             if event.type == pygame.USEREVENT:
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element == buttonStartGame:
-                        print('Start Game!')
+                        newGame()
 
                     if event.ui_element == buttonSettings:
                         print('Settings!')
@@ -147,12 +159,95 @@ def start_screen():
         clock.tick(FPS)
 
 
+def newGame():
+    grid = Grid(W, H)
+
+    f = Figure(figuresPos[randrange(len(figuresPos))])
+    f.draw()
+
+    while True:
+        screen.fill('black')
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+
+        if f.move:
+            f.update(grid)
+        else:
+            f = Figure(figuresPos[randrange(len(figuresPos))])
+            f.draw()
+        grid.draw()
+
+        clock.tick(FPS)
+        pygame.display.flip()
+
+
+class Figure:
+    imageFigure = load_image('alone_sqr.png')
+
+    def __init__(self, structure):
+        self.structure = structure
+        self.spitesFigure = pygame.sprite.Group()
+        self.move = True
+
+        for pos in self.structure:
+            dx, dy = pos
+            sqr = pygame.sprite.Sprite(self.spitesFigure)
+            sqr.image = Figure.imageFigure
+            sqr.rect = sqr.image.get_rect()
+            sqr.rect.x = W // 2 * scale + dx * scale
+            sqr.rect.y = dy * scale
+
+    def draw(self):
+        self.spitesFigure.draw(screen)
+
+    def update(self, grid):
+        self.collision(grid)
+        if self.move:
+            for spr in self.spitesFigure:
+                spr.rect.y += scale
+            self.draw()
+        else:
+            self.destruct(grid)
+
+    def collision(self, grid):
+        for spr in self.spitesFigure:
+            x = spr.rect.x // scale
+            y = spr.rect.y // scale + 1
+            if y >= H or grid.field[y][x]:
+                self.move = False
+
+    def destruct(self, grid):
+        for spr in self.spitesFigure:
+            x = spr.rect.x // scale
+            y = spr.rect.y // scale
+            grid.field[y][x] = 1
+            grid.newSprite(spr)
+        pprint(grid.field)
+
+
+class Grid:
+    def __init__(self, w, h):
+        self.width = w
+        self.height = h
+
+        self.field = [[0] * w for i in range(h)]
+        self.spritesSqr = pygame.sprite.Group()
+
+    def draw(self):
+        self.spritesSqr.draw(screen)
+
+    def update(self):
+        for y in range(self.height):
+            for x in range(self.width):
+                sqr = pygame.sprite.Sprite(self.spritesSqr)
+                sqr.image = Figure.imageFigure
+                sqr.rect = sqr.image.get_rect()
+                sqr.rect.x = x * scale
+                sqr.rect.y = y * scale
+
+    def newSprite(self, sprite):
+        self.spritesSqr.add(sprite)
+
+
 start_screen()
-
-while True:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            terminate()
-
-    clock.tick(FPS)
-    pygame.display.flip()
