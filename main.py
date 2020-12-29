@@ -188,6 +188,7 @@ def newGame():
             f = Figure(figuresPos[randrange(len(figuresPos))])
             f.draw()
         grid.draw()
+        grid.draw_grid()
 
         clock.tick(FPS)
         pygame.display.flip()
@@ -255,6 +256,12 @@ class Grid:
 
     def draw(self):
         self.spritesSqr.draw(screen)
+
+    def draw_grid(self):
+        for i in range(H):
+            for j in range(W):
+                pygame.draw.rect(screen, pygame.Color("white"),
+                                 (j * scale, i * scale, scale, scale), 1)
 
     def update(self):
         for y in range(self.height):
