@@ -167,12 +167,23 @@ def newGame():
 
     while True:
         screen.fill('black')
+        side = None
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
+            keyboard_keys = pygame.key.get_pressed()
+
+            if keyboard_keys[pygame.K_LEFT]:
+                side = 'left'
+
+            elif keyboard_keys[pygame.K_RIGHT]:
+                side = 'right'
+
+            if keyboard_keys[pygame.K_DOWN]:
+                side = 'down'
 
         if f.move:
-            f.update(grid)
+            f.update(grid, side)
         else:
             f = Figure(figuresPos[randrange(len(figuresPos))])
             f.draw()
@@ -201,21 +212,29 @@ class Figure:
     def draw(self):
         self.spitesFigure.draw(screen)
 
-    def update(self, grid):
-        self.collision(grid)
+    def update(self, *args, **kwargs) -> None:
+        grid = args[0]
+        side = args[1]
+        self.collision(grid, side)
         if self.move:
             for spr in self.spitesFigure:
-                spr.rect.y += scale
+                spr.rect.y += 1
             self.draw()
         else:
             self.destruct(grid)
 
-    def collision(self, grid):
+    def collision(self, grid, side):
         for spr in self.spitesFigure:
             x = spr.rect.x // scale
             y = spr.rect.y // scale + 1
             if y >= H or grid.field[y][x]:
                 self.move = False
+            if side == 'left' and spr.rect.x > 0:
+                spr.rect.x -= scale
+            elif side == 'right' and spr.rect.x < SCREEN_WIDTH // 4 + 60:
+                spr.rect.x += scale
+            if side == 'down' and spr.rect.y < SCREEN_HEIGHT:
+                spr.rect.y += scale
 
     def destruct(self, grid):
         for spr in self.spitesFigure:
