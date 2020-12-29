@@ -32,6 +32,7 @@ def load_image(name, colorkey=None):
         image.set_colorkey(colorkey)
     else:
         image = image.convert_alpha()
+
     return image
 
 
@@ -43,6 +44,7 @@ def write_history():
     with open('history.txt', 'r', encoding='utf-8') as hist:
         file = [line.strip() for line in hist]
     font = pygame.font.Font(None, 20)
+
     for i in range(len(file)):
         text = font.render(file[i], True, pygame.Color('white'))
         text_x = SCREEN_WIDTH // 2 - text.get_width() // 2
@@ -126,10 +128,13 @@ def start_screen():
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element == buttonStartGame:
                         print('Start Game!')
+
                     if event.ui_element == buttonSettings:
                         print('Settings!')
+
                     if event.ui_element == buttonHistory:
                         write_history()
+
                     if event.ui_element == buttonExit:
                         terminate()
 
