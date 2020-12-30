@@ -90,6 +90,7 @@ def write_history():
         manager_hist.draw_ui(screen)
         clock.tick(FPS)
 
+
 def start_screen():
     manager_screen = pygame_gui.UIManager(SIZE)
     line = 'Tetris'
@@ -201,7 +202,8 @@ def newGame():
 
 
 class Figure:
-    imagesFigure = [load_image('images/alone_sqr1.png'), load_image('images/alone_sqr2.png'), load_image('images/alone_sqr3.png')]
+    imagesFigure = [load_image('images/alone_sqr1.png'), load_image('images/alone_sqr2.png'),
+                    load_image('images/alone_sqr3.png')]
 
     def __init__(self, structure):
         self.structure = structure
@@ -257,6 +259,7 @@ class Figure:
             y = (spr.rect.y - TOP) // scale
             grid.field[y][x] = 1
             grid.newSprite(spr)
+        grid.update()
 
 
 class Grid:
@@ -279,10 +282,19 @@ class Grid:
     def update(self):
         for y in range(self.height):
             if all(self.field[y]):
-                self.field[y] = [0] * self.width
+                self.field = [[0] * self.width] + self.field[:y] + self.field[y + 1:]
+
+                coord = y * scale + TOP
+                for spr in self.spritesSqr:
+                    if spr.rect.y == coord:
+                        self.spritesSqr.remove(spr)
+                    elif spr.rect.y < coord:
+                        spr.rect.y += scale
+        screen.fill('black')
+        self.draw()
 
     def newSprite(self, sprite):
         self.spritesSqr.add(sprite)
 
-
+    
 start_screen()
