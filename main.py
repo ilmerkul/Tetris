@@ -1,5 +1,6 @@
 import os
 import sys
+from copy import deepcopy
 from random import randrange, choice
 
 import pygame
@@ -13,10 +14,14 @@ clock = pygame.time.Clock()
 manager = pygame_gui.UIManager(SIZE)
 FPS = 60
 
+SCORE = 0
+BEST_SCORE = 0
+
 scale = 30
 W, H = 10, 20
 TOP = 30
 LEFT = 30
+
 figuresPos = [[(-1, 0), (-2, 0), (0, 0), (1, 0)],
               [(0, -1), (-1, -1), (-1, 0), (0, 0)],
               [(-1, 0), (-1, 1), (0, 0), (0, -1)],
@@ -24,6 +29,7 @@ figuresPos = [[(-1, 0), (-2, 0), (0, 0), (1, 0)],
               [(0, 0), (0, -1), (0, 1), (-1, -1)],
               [(0, 0), (0, -1), (0, 1), (1, -1)],
               [(0, 0), (0, -1), (0, 1), (-1, 0)]]
+
 MOVE_FIGURE = pygame.USEREVENT + 1
 pygame.time.set_timer(MOVE_FIGURE, 1000)
 
@@ -53,10 +59,11 @@ def load_image(name, colorkey=None):
 
 def write_history():
     manager_hist = pygame_gui.UIManager(SIZE)
-    fon = pygame.transform.scale(load_image('images/historyMenuBackground.jpg'), (SCREEN_WIDTH, SCREEN_HEIGHT))
+    fon = pygame.transform.scale(load_image('images/historyMenuBackground.jpg'),
+                                 (SCREEN_WIDTH, SCREEN_HEIGHT))
     screen.blit(fon, (0, 0))
 
-    with open('data/history.txt', 'r', encoding='utf-8') as hist:
+    with open('history.txt', 'r', encoding='utf-8') as hist:
         file = [line.strip() for line in hist]
     font = pygame.font.Font(None, 20)
 
@@ -70,7 +77,8 @@ def write_history():
     buttonHeight = 50
     buttonTop = 0
     buttonStartGame = pygame_gui.elements.UIButton(
-        relative_rect=pygame.Rect((buttonTop, buttonTop), (buttonWidth, buttonHeight)),
+        relative_rect=pygame.Rect((buttonTop, buttonTop),
+                                  (buttonWidth, buttonHeight)),
         text='Back',
         manager=manager_hist)
 
@@ -95,7 +103,8 @@ def start_screen():
     manager_screen = pygame_gui.UIManager(SIZE)
     line = 'Tetris'
 
-    fon = pygame.transform.scale(load_image('images/startScreenBackground.jpg'), (SCREEN_WIDTH, SCREEN_HEIGHT))
+    fon = pygame.transform.scale(load_image('images/startScreenBackground.jpg'),
+                                 (SCREEN_WIDTH, SCREEN_HEIGHT))
     screen.blit(fon, (0, 0))
 
     font = pygame.font.Font(None, 100)
@@ -111,12 +120,14 @@ def start_screen():
     buttonSpace = 20
 
     buttonStartGame = pygame_gui.elements.UIButton(
-        relative_rect=pygame.Rect(((SCREEN_WIDTH - buttonWidth) // 2, buttonTop), (buttonWidth, buttonHeight)),
+        relative_rect=pygame.Rect(((SCREEN_WIDTH - buttonWidth) // 2, buttonTop),
+                                  (buttonWidth, buttonHeight)),
         text='Start Game',
         manager=manager_screen)
 
     buttonSettings = pygame_gui.elements.UIButton(
-        relative_rect=pygame.Rect(((SCREEN_WIDTH - buttonWidth) // 2, buttonTop + buttonHeight + buttonSpace),
+        relative_rect=pygame.Rect(((SCREEN_WIDTH - buttonWidth)
+                                   // 2, buttonTop + buttonHeight + buttonSpace),
                                   (buttonWidth, buttonHeight)),
         text='Settings',
         manager=manager_screen)
@@ -128,7 +139,8 @@ def start_screen():
         manager=manager_screen)
 
     buttonExit = pygame_gui.elements.UIButton(
-        relative_rect=pygame.Rect(((SCREEN_WIDTH - buttonWidth) // 2, buttonTop + 3 * (buttonHeight + buttonSpace)),
+        relative_rect=pygame.Rect(((SCREEN_WIDTH - buttonWidth) // 2,
+                                   buttonTop + 3 * (buttonHeight + buttonSpace)),
                                   (buttonWidth, buttonHeight)),
         text='Exit',
         manager=manager_screen)
@@ -163,13 +175,14 @@ def start_screen():
 
 
 def newGame():
+    global SCORE, BEST_SCORE
+    SCORE = 0
     grid = Grid(W, H, TOP, LEFT)
 
     screen.fill('black')
     f = Figure(figuresPos[randrange(len(figuresPos))])
     f.draw()
 
-    side = None
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -195,8 +208,12 @@ def newGame():
                 screen.fill('black')
                 f.update(grid)
 
-        grid.draw()
+            if keyboard_keys[pygame.K_UP]:
+                screen.fill('black')
+                f.turn_figure(grid)
 
+        grid.draw()
+        grid.score(SCORE, BEST_SCORE)
         clock.tick(FPS)
         pygame.display.flip()
 
@@ -222,6 +239,32 @@ class Figure:
     def draw(self):
         self.spitesFigure.draw(screen)
 
+    def turn_figure(self, grid):
+        figure = []
+        for spr in self.spitesFigure:
+            figure.append(spr.rect)
+        center = figure[0]
+        on_board = 0
+        for i in range(4):
+            x = figure[i].y - center.y
+            y = figure[i].x - center.x
+            x1 = center.x - x
+            y1 = center.y + y
+            if (scale <= x1 + scale <= (W + 1) * scale and
+                scale <= x1 <= (W + 1) * scale) and \
+                    (scale <= y1 + scale <= (H + 1) * scale and
+                     scale <= y1 <= (H + 1) * scale) and not grid.field[y1 // 30 - 1][x1 // 30 - 1]:
+                on_board += 1
+            else:
+                break
+        if on_board == 4:
+            for i in range(4):
+                x = figure[i].y - center.y
+                y = figure[i].x - center.x
+                figure[i].x = center.x - x
+                figure[i].y = center.y + y
+        self.spitesFigure.draw(screen)
+
     def moveHorizontal(self, side, grid):
         for spr in self.spitesFigure:
             x, y = (spr.rect.x - LEFT) // scale, (spr.rect.y - TOP) // scale
@@ -243,6 +286,7 @@ class Figure:
             self.destruct(grid)
 
     def collision(self, grid):
+        global BEST_SCORE
         for spr in self.spitesFigure:
             x = (spr.rect.x - LEFT) // scale
             y = (spr.rect.y - TOP) // scale
@@ -250,6 +294,8 @@ class Figure:
                 self.move = False
                 if y <= 0:
                     print('You lose!')
+                    if BEST_SCORE < SCORE:
+                        BEST_SCORE = SCORE
                     newGame()
                 return
 
@@ -275,11 +321,14 @@ class Grid:
     def draw(self):
         for x in range(self.width):
             for y in range(self.height):
-                pygame.draw.rect(screen, 'white', ((x * scale + self.left, y * scale + self.top), (scale, scale)),
+                pygame.draw.rect(screen, 'white', ((x * scale + self.left,
+                                                    y * scale + self.top),
+                                                   (scale, scale)),
                                  width=1)
         self.spritesSqr.draw(screen)
 
     def update(self):
+        global SCORE
         for y in range(self.height):
             if all(self.field[y]):
                 self.field = [[0] * self.width] + self.field[:y] + self.field[y + 1:]
@@ -290,11 +339,21 @@ class Grid:
                         self.spritesSqr.remove(spr)
                     elif spr.rect.y < coord:
                         spr.rect.y += scale
+                SCORE += 100
         screen.fill('black')
         self.draw()
 
     def newSprite(self, sprite):
         self.spritesSqr.add(sprite)
 
-    
+    def score(self, score, best_score):
+        texts = ["SCORE", score, "BEST SCORE", best_score]
+        for i in range(4):
+            font = pygame.font.Font(None, 50)
+            text = font.render(str(texts[i]), True, pygame.Color('grey'))
+            text_x = SCREEN_WIDTH // 2 + 100
+            text_y = 200 + i * 50
+            screen.blit(text, (text_x, text_y))
+
+
 start_screen()
