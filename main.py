@@ -1,36 +1,14 @@
 import os
 import sys
-from copy import deepcopy
 from random import randrange, choice
+
+from CONSTANTS import *
 
 import pygame
 import pygame_gui
 
 pygame.init()
 pygame.display.set_caption('Tetris')
-SIZE = SCREEN_WIDTH, SCREEN_HEIGHT = 800, 700
-screen = pygame.display.set_mode(SIZE)
-clock = pygame.time.Clock()
-manager = pygame_gui.UIManager(SIZE)
-FPS = 60
-
-SCORE = 0
-BEST_SCORE = 0
-
-scale = 30
-W, H = 10, 20
-TOP = 30
-LEFT = 30
-
-figuresPos = [[(-1, 0), (-2, 0), (0, 0), (1, 0)],
-              [(0, -1), (-1, -1), (-1, 0), (0, 0)],
-              [(-1, 0), (-1, 1), (0, 0), (0, -1)],
-              [(0, 0), (-1, 0), (0, 1), (-1, -1)],
-              [(0, 0), (0, -1), (0, 1), (-1, -1)],
-              [(0, 0), (0, -1), (0, 1), (1, -1)],
-              [(0, 0), (0, -1), (0, 1), (-1, 0)]]
-
-MOVE_FIGURE = pygame.USEREVENT + 1
 pygame.time.set_timer(MOVE_FIGURE, 1000)
 
 
@@ -63,9 +41,9 @@ def write_history():
                                  (SCREEN_WIDTH, SCREEN_HEIGHT))
     screen.blit(fon, (0, 0))
 
-    with open('history.txt', 'r', encoding='utf-8') as hist:
+    with open('data/history.txt', 'r', encoding='utf-8') as hist:
         file = [line.strip() for line in hist]
-    font = pygame.font.Font(None, 20)
+    font = pygame.font.Font(None, 21)
 
     for i in range(len(file)):
         text = font.render(file[i], True, pygame.Color('white'))
@@ -186,7 +164,7 @@ def newGame():
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                terminate()
+                start_screen()
             elif event.type == MOVE_FIGURE:
                 screen.fill('black')
                 if f.move:
