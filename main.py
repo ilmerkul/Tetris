@@ -9,7 +9,7 @@ import pygame_gui
 
 pygame.init()
 pygame.display.set_caption('Tetris')
-pygame.time.set_timer(MOVE_FIGURE, 1000)
+pygame.time.set_timer(MOVE_FIGURE, 500)
 
 
 def terminate():
@@ -164,14 +164,8 @@ def newGame():
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                start_screen()
-            elif event.type == MOVE_FIGURE:
-                screen.fill('black')
-                if f.move:
-                    f.update(grid)
-                else:
-                    f = Figure(figuresPos[randrange(len(figuresPos))])
-                    f.draw()
+                terminate()
+
             keyboard_keys = pygame.key.get_pressed()
 
             if keyboard_keys[pygame.K_LEFT]:
@@ -182,13 +176,23 @@ def newGame():
                 side = 1
                 f.moveHorizontal(side, grid)
 
-            if keyboard_keys[pygame.K_DOWN]:
-                screen.fill('black')
-                f.update(grid)
-
-            if keyboard_keys[pygame.K_UP]:
+            elif keyboard_keys[pygame.K_UP]:
                 screen.fill('black')
                 f.turn_figure(grid)
+
+            if event.type == MOVE_FIGURE:
+                screen.fill('black')
+                if f.move:
+                    f.update(grid)
+                else:
+                    f = Figure(figuresPos[randrange(len(figuresPos))])
+                    f.draw()
+            elif keyboard_keys[pygame.K_DOWN]:
+                screen.fill('black')
+                f.update(grid)
+                if f.move:
+                    SCORE += JUMPCOST
+
 
         grid.draw()
         grid.score(SCORE, BEST_SCORE)
@@ -307,6 +311,7 @@ class Grid:
 
     def update(self):
         global SCORE
+        lineCount = 0
         for y in range(self.height):
             if all(self.field[y]):
                 self.field = [[0] * self.width] + self.field[:y] + self.field[y + 1:]
@@ -317,7 +322,9 @@ class Grid:
                         self.spritesSqr.remove(spr)
                     elif spr.rect.y < coord:
                         spr.rect.y += scale
-                SCORE += 100
+                lineCount += 1
+        if lineCount:
+            SCORE += LINECOST[lineCount - 1]
         screen.fill('black')
         self.draw()
 

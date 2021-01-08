@@ -9,6 +9,9 @@ FPS = 60
 
 SCORE = 0
 BEST_SCORE = 0
+LINECOST = [100, 300, 700, 1500]
+JUMPCOST = 10
+
 
 scale = 30
 W, H = 10, 20
