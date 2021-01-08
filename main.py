@@ -9,7 +9,10 @@ import pygame_gui
 
 pygame.init()
 pygame.display.set_caption('Tetris')
-pygame.time.set_timer(MOVE_FIGURE, 500)
+pygame.time.set_timer(MOVE_FIGURE, 400)
+
+sound1 = pygame.mixer.Sound('data/music/stageClear.mp3')
+sound2 = pygame.mixer.Sound('data/music/gameOver.mp3')
 
 
 def terminate():
@@ -123,6 +126,9 @@ def start_screen():
         text='Exit',
         manager=manager_screen)
 
+    pygame.mixer.music.load('data/music/start.mp3')
+    pygame.mixer.music.play(-1)
+
     while True:
         time_delta = clock.tick(60) / 1000.0
         for event in pygame.event.get():
@@ -156,6 +162,9 @@ def newGame():
     global SCORE, BEST_SCORE
     SCORE = 0
     grid = Grid(W, H, TOP, LEFT)
+
+    pygame.mixer.music.load('data/music/game.mp3')
+    pygame.mixer.music.play()
 
     screen.fill('black')
     f = Figure(figuresPos[randrange(len(figuresPos))])
@@ -276,6 +285,7 @@ class Figure:
                 self.move = False
                 if y <= 0:
                     print('You lose!')
+                    sound2.play()
                     if BEST_SCORE < SCORE:
                         BEST_SCORE = SCORE
                     newGame()
@@ -325,6 +335,7 @@ class Grid:
                 lineCount += 1
         if lineCount:
             SCORE += LINECOST[lineCount - 1]
+            sound1.play()
         screen.fill('black')
         self.draw()
 
