@@ -1,22 +1,20 @@
 import os
 import sys
 from random import randrange, choice
-
 from CONSTANTS import *
-
-import pygame
-import pygame_gui
 
 pygame.init()
 pygame.display.set_caption('Tetris')
-pygame.time.set_timer(MOVE_FIGURE, 400)
 
-sound1 = pygame.mixer.Sound('data/music/stageClear.mp3')
-sound2 = pygame.mixer.Sound('data/music/gameOver.mp3')
+clear_stage = pygame.mixer.Sound(music[0][2])
+game_over = pygame.mixer.Sound(music[1][2])
+main_menu = music[2][2]
+game_music = music[3][2]
 
 
 def terminate():
     pygame.quit()
+    cur.close()
     sys.exit()
 
 
@@ -40,7 +38,8 @@ def load_image(name, colorkey=None):
 
 def write_history():
     manager_hist = pygame_gui.UIManager(SIZE)
-    fon = pygame.transform.scale(load_image('images/historyMenuBackground.jpg'),
+    fon = pygame.transform.scale(load_image
+                                 (hist_backg),
                                  (SCREEN_WIDTH, SCREEN_HEIGHT))
     screen.blit(fon, (0, 0))
 
@@ -57,7 +56,7 @@ def write_history():
     buttonWidth = 100
     buttonHeight = 50
     buttonTop = 0
-    buttonStartGame = pygame_gui.elements.UIButton(
+    buttonBackToStart = pygame_gui.elements.UIButton(
         relative_rect=pygame.Rect((buttonTop, buttonTop),
                                   (buttonWidth, buttonHeight)),
         text='Back',
@@ -70,7 +69,7 @@ def write_history():
                 terminate()
             if event.type == pygame.USEREVENT:
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
-                    if event.ui_element == buttonStartGame:
+                    if event.ui_element == buttonBackToStart:
                         start_screen()
             manager_hist.process_events(event)
 
@@ -84,7 +83,8 @@ def start_screen():
     manager_screen = pygame_gui.UIManager(SIZE)
     line = 'Tetris'
 
-    fon = pygame.transform.scale(load_image('images/startScreenBackground.jpg'),
+    fon = pygame.transform.scale(load_image
+                                 (start_backg),
                                  (SCREEN_WIDTH, SCREEN_HEIGHT))
     screen.blit(fon, (0, 0))
 
@@ -101,32 +101,37 @@ def start_screen():
     buttonSpace = 20
 
     buttonStartGame = pygame_gui.elements.UIButton(
-        relative_rect=pygame.Rect(((SCREEN_WIDTH - buttonWidth) // 2, buttonTop),
+        relative_rect=pygame.Rect(((SCREEN_WIDTH - buttonWidth) // 2,
+                                   buttonTop),
                                   (buttonWidth, buttonHeight)),
         text='Start Game',
         manager=manager_screen)
 
     buttonSettings = pygame_gui.elements.UIButton(
         relative_rect=pygame.Rect(((SCREEN_WIDTH - buttonWidth)
-                                   // 2, buttonTop + buttonHeight + buttonSpace),
+                                   // 2, buttonTop +
+                                   buttonHeight + buttonSpace),
                                   (buttonWidth, buttonHeight)),
         text='Settings',
         manager=manager_screen)
 
     buttonHistory = pygame_gui.elements.UIButton(
-        relative_rect=pygame.Rect(((SCREEN_WIDTH - buttonWidth) // 2, buttonTop + 2 * (buttonHeight + buttonSpace)),
+        relative_rect=pygame.Rect(((SCREEN_WIDTH - buttonWidth) // 2,
+                                   buttonTop + 2 * (buttonHeight
+                                                    + buttonSpace)),
                                   (buttonWidth, buttonHeight)),
         text='History',
         manager=manager_screen)
 
     buttonExit = pygame_gui.elements.UIButton(
         relative_rect=pygame.Rect(((SCREEN_WIDTH - buttonWidth) // 2,
-                                   buttonTop + 3 * (buttonHeight + buttonSpace)),
+                                   buttonTop + 3 *
+                                   (buttonHeight + buttonSpace)),
                                   (buttonWidth, buttonHeight)),
         text='Exit',
         manager=manager_screen)
 
-    pygame.mixer.music.load('data/music/start.mp3')
+    pygame.mixer.music.load(main_menu)
     pygame.mixer.music.play(-1)
 
     while True:
@@ -141,7 +146,7 @@ def start_screen():
                         newGame()
 
                     if event.ui_element == buttonSettings:
-                        print('Settings!')
+                        ...
 
                     if event.ui_element == buttonHistory:
                         write_history()
@@ -150,7 +155,9 @@ def start_screen():
                         terminate()
 
             manager_screen.process_events(event)
-
+        if not pygame.mixer.music.get_busy:
+            pygame.mixer.music.load(main_menu)
+            pygame.mixer.music.play(-1)
         manager_screen.update(time_delta)
 
         pygame.display.flip()
@@ -163,8 +170,8 @@ def newGame():
     SCORE = 0
     grid = Grid(W, H, TOP, LEFT)
 
-    pygame.mixer.music.load('data/music/game.mp3')
-    pygame.mixer.music.play()
+    pygame.mixer.music.load(game_music)
+    pygame.mixer.music.play(-1)
 
     screen.fill('black')
     f = Figure(figuresPos[randrange(len(figuresPos))])
@@ -201,8 +208,6 @@ def newGame():
                 f.update(grid)
                 if f.move:
                     SCORE += JUMPCOST
-
-
         grid.draw()
         grid.score(SCORE, BEST_SCORE)
         clock.tick(FPS)
@@ -210,8 +215,9 @@ def newGame():
 
 
 class Figure:
-    imagesFigure = [load_image('images/alone_sqr1.png'), load_image('images/alone_sqr2.png'),
-                    load_image('images/alone_sqr3.png')]
+    imagesFigure = [load_image(sqr1),
+                    load_image(sqr2),
+                    load_image(sqr3)]
 
     def __init__(self, structure):
         self.structure = structure
@@ -244,7 +250,8 @@ class Figure:
             if (scale <= x1 + scale <= (W + 1) * scale and
                 scale <= x1 <= (W + 1) * scale) and \
                     (scale <= y1 + scale <= (H + 1) * scale and
-                     scale <= y1 <= (H + 1) * scale) and not grid.field[y1 // 30 - 1][x1 // 30 - 1]:
+                     scale <= y1 <= (H + 1) * scale) and \
+                    not grid.field[y1 // 30 - 1][x1 // 30 - 1]:
                 on_board += 1
             else:
                 break
@@ -258,7 +265,8 @@ class Figure:
 
     def moveHorizontal(self, side, grid):
         for spr in self.spitesFigure:
-            x, y = (spr.rect.x - LEFT) // scale, (spr.rect.y - TOP) // scale
+            x, y = (spr.rect.x - LEFT) // scale, \
+                   (spr.rect.y - TOP) // scale
             if not (0 <= x + side < W) or grid.field[y][x + side]:
                 return
 
@@ -284,10 +292,13 @@ class Figure:
             if y + 1 >= H or grid.field[y + 1][x]:
                 self.move = False
                 if y <= 0:
-                    print('You lose!')
-                    sound2.play()
-                    if BEST_SCORE < SCORE:
-                        BEST_SCORE = SCORE
+                    cur.execute(f"""INSERT INTO SCORES(score)
+                     VALUES({SCORE})""").fetchall()
+                    con.commit()
+                    game_over.play()
+                    BEST_SCORE = \
+                        cur.execute(f"""SELECT MAX(score)
+                         FROM SCORES""").fetchone()[0]
                     newGame()
                 return
 
@@ -324,7 +335,8 @@ class Grid:
         lineCount = 0
         for y in range(self.height):
             if all(self.field[y]):
-                self.field = [[0] * self.width] + self.field[:y] + self.field[y + 1:]
+                self.field = [[0] * self.width] + self.field[:y] \
+                             + self.field[y + 1:]
 
                 coord = y * scale + TOP
                 for spr in self.spritesSqr:
@@ -335,7 +347,7 @@ class Grid:
                 lineCount += 1
         if lineCount:
             SCORE += LINECOST[lineCount - 1]
-            sound1.play()
+            clear_stage.play()
         screen.fill('black')
         self.draw()
 
@@ -346,7 +358,8 @@ class Grid:
         texts = ["SCORE", score, "BEST SCORE", best_score]
         for i in range(4):
             font = pygame.font.Font(None, 50)
-            text = font.render(str(texts[i]), True, pygame.Color('grey'))
+            text = font.render(str(texts[i]), True,
+                               pygame.Color('grey'))
             text_x = SCREEN_WIDTH // 2 + 100
             text_y = 200 + i * 50
             screen.blit(text, (text_x, text_y))

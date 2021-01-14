@@ -1,3 +1,5 @@
+import sqlite3
+
 import pygame
 import pygame_gui
 
@@ -8,10 +10,8 @@ manager = pygame_gui.UIManager(SIZE)
 FPS = 60
 
 SCORE = 0
-BEST_SCORE = 0
 LINECOST = [100, 300, 700, 1500]
 JUMPCOST = 10
-
 
 scale = 30
 W, H = 10, 20
@@ -27,3 +27,21 @@ figuresPos = [[(-1, 0), (-2, 0), (0, 0), (1, 0)],
               [(0, 0), (0, -1), (0, 1), (-1, 0)]]
 
 MOVE_FIGURE = pygame.USEREVENT + 1
+pygame.time.set_timer(MOVE_FIGURE, 400)
+
+db_name = "data/data bases/main_db.db"
+con = sqlite3.connect(db_name)
+cur = con.cursor()
+
+music = cur.execute("SELECT * FROM SOUNDS").fetchall()
+sprites_and_jpgs = cur.execute("SELECT * FROM SPRITES").fetchall()
+
+BEST_SCORE = scores = cur.execute(f"SELECT MAX(score) FROM SCORES").fetchone()[0]
+
+sqr1 = sprites_and_jpgs[0][2]
+sqr2 = sprites_and_jpgs[1][2]
+sqr3 = sprites_and_jpgs[2][2]
+hist_backg = sprites_and_jpgs[3][2]
+start_backg = sprites_and_jpgs[4][2]
+
+con.commit()
