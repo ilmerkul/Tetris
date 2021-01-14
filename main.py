@@ -135,7 +135,6 @@ def start_screen():
     pygame.mixer.music.play(-1)
 
     while True:
-        time_delta = clock.tick(60) / 1000.0
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
@@ -177,6 +176,16 @@ def newGame():
     f = Figure(figuresPos[randrange(len(figuresPos))])
     f.draw()
 
+    manager_hist = pygame_gui.UIManager(SIZE)
+    buttonWidth = 100
+    buttonHeight = 50
+    buttonTop = SCREEN_WIDTH - 100
+    buttonBackToStart = pygame_gui.elements.UIButton(
+        relative_rect=pygame.Rect((buttonTop, 0),
+                                  (buttonWidth, buttonHeight)),
+        text='Back',
+        manager=manager_hist)
+
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -208,8 +217,15 @@ def newGame():
                 f.update(grid)
                 if f.move:
                     SCORE += JUMPCOST
+            if event.type == pygame.USEREVENT:
+                if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
+                    if event.ui_element == buttonBackToStart:
+                        start_screen()
+            manager_hist.process_events(event)
         grid.draw()
         grid.score(SCORE, BEST_SCORE)
+        manager_hist.update(time_delta)
+        manager_hist.draw_ui(screen)
         clock.tick(FPS)
         pygame.display.flip()
 
