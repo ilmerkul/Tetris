@@ -135,9 +135,17 @@ def start_screen():
         text='Start Game',
         manager=manager_screen)
 
+    buttonSettings = pygame_gui.elements.UIButton(
+        relative_rect=pygame.Rect(((SCREEN_WIDTH - buttonWidth)
+                                   // 2, buttonTop +
+                                   buttonHeight + buttonSpace),
+                                  (buttonWidth, buttonHeight)),
+        text='Settings',
+        manager=manager_screen)
+
     buttonHistory = pygame_gui.elements.UIButton(
         relative_rect=pygame.Rect(((SCREEN_WIDTH - buttonWidth) // 2,
-                                   buttonTop + 1 * (buttonHeight
+                                   buttonTop + 2 * (buttonHeight
                                                     + buttonSpace)),
                                   (buttonWidth, buttonHeight)),
         text='History',
@@ -145,7 +153,7 @@ def start_screen():
 
     buttonExit = pygame_gui.elements.UIButton(
         relative_rect=pygame.Rect(((SCREEN_WIDTH - buttonWidth) // 2,
-                                   buttonTop + 2 *
+                                   buttonTop + 3 *
                                    (buttonHeight + buttonSpace)),
                                   (buttonWidth, buttonHeight)),
         text='Exit',
