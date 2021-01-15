@@ -48,6 +48,11 @@ def load_image(name, colorkey=None):
 
     return image
 
+sqr1, sqr2, sqr3 = sprites[0]
+imagesFigure = [load_image(sqr1),
+                load_image(sqr2),
+                load_image(sqr3)]
+
 
 def write_history():
     """
@@ -101,6 +106,111 @@ def write_history():
         manager_hist.update(time_delta)
         pygame.display.flip()
         manager_hist.draw_ui(screen)
+        clock.tick(FPS)
+
+
+def settings():
+    manager_screen = pygame_gui.UIManager(SIZE)
+    line = 'Settings'
+
+    fon = pygame.transform.scale(load_image
+                                 (settings_backg),
+                                 (SCREEN_WIDTH, SCREEN_HEIGHT))
+    screen.blit(fon, (0, 0))
+
+    font = pygame.font.Font(None, 100)
+    string_rendered = font.render(line, True, pygame.Color('black'))
+    intro_rect = string_rendered.get_rect()
+    intro_rect.top = 50
+    intro_rect.x = SCREEN_WIDTH // 2 - 130
+    screen.blit(string_rendered, intro_rect)
+
+    f = pygame.font.Font(None, 70)
+    strr = f.render('Скины', True, pygame.Color('black'))
+    intro_rect = string_rendered.get_rect()
+    intro_rect.top = 150
+    intro_rect.x = SCREEN_WIDTH // 2 - 70
+    screen.blit(strr, intro_rect)
+
+    buttonWidth = 50
+    buttonHeight = 50
+    buttonTop = 250
+    buttonSpace = 300
+
+    buttonLeftSkin = pygame_gui.elements.UIButton(
+        relative_rect=pygame.Rect(((SCREEN_WIDTH - buttonWidth - buttonSpace) // 2,
+                                   buttonTop),
+                                  (buttonWidth, buttonHeight)),
+        text='<--',
+        manager=manager_screen)
+
+    buttonRightSkin = pygame_gui.elements.UIButton(
+        relative_rect=pygame.Rect(((SCREEN_WIDTH - buttonWidth + buttonSpace)
+                                   // 2, buttonTop),
+                                  (buttonWidth, buttonHeight)),
+        text='-->',
+        manager=manager_screen)
+
+    buttonSelectSkin = pygame_gui.elements.UIButton(
+        relative_rect=pygame.Rect(((SCREEN_WIDTH - buttonWidth - buttonSpace)
+                                   // 2, buttonTop + buttonHeight + 30),
+                                  (buttonWidth + 100, buttonHeight)),
+        text='Select',
+        manager=manager_screen)
+
+    buttonBackToStart = pygame_gui.elements.UIButton(
+        relative_rect=pygame.Rect((SCREEN_WIDTH - buttonWidth, 0),
+                                  (buttonWidth, buttonHeight)),
+        text='Back',
+        manager=manager_screen)
+
+    pygame.mixer.music.load(main_menu)
+    pygame.mixer.music.play(-1)
+
+    i = 0
+    skins = pygame.sprite.Group()
+    img = load_image(sprites[i][randrange(0, 2)])
+    skin = pygame.sprite.Sprite(skins)
+    skin.image = img
+    skin.rect = skin.image.get_rect()
+    skin.rect.x = (SCREEN_WIDTH - buttonWidth) // 2
+    skin.rect.y = buttonTop
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+
+            if event.type == pygame.USEREVENT:
+                if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
+                    if event.ui_element == buttonLeftSkin:
+                        i = (i - 1) % len(sprites)
+                        skin.image = load_image(sprites[i][randrange(0, 2)])
+
+                    if event.ui_element == buttonRightSkin:
+                        i = (i + 1) % len(sprites)
+                        skin.image = load_image(sprites[i][randrange(0, 2)])
+
+                    if event.ui_element == buttonSelectSkin:
+                        sqr1, sqr2, sqr3 = sprites[i]
+                        global imagesFigure
+                        imagesFigure = [load_image(sqr1),
+                                        load_image(sqr2),
+                                        load_image(sqr3)]
+
+                    if event.ui_element == buttonBackToStart:
+                        start_screen()
+
+            manager_screen.process_events(event)
+
+        skins.draw(screen)
+        if not pygame.mixer.music.get_busy:
+            pygame.mixer.music.load(main_menu)
+            pygame.mixer.music.play(-1)
+        manager_screen.update(time_delta)
+
+        pygame.display.flip()
+        manager_screen.draw_ui(screen)
         clock.tick(FPS)
 
 
@@ -173,7 +283,7 @@ def start_screen():
                         newGame()
 
                     if event.ui_element == buttonSettings:
-                        ...
+                        settings()
 
                     if event.ui_element == buttonHistory:
                         write_history()
@@ -290,9 +400,6 @@ class Figure:
              соприкосновение с предметами, начисление очков
             destruct - появление фигуры на поле
     """
-    imagesFigure = [load_image(sqr1),
-                    load_image(sqr2),
-                    load_image(sqr3)]
 
     def __init__(self, structure):
         #  structure - расположение углов спрайтов
@@ -300,7 +407,7 @@ class Figure:
         self.structure = structure
         self.spitesFigure = pygame.sprite.Group()
         self.move = True
-        img = choice(Figure.imagesFigure)
+        img = choice(imagesFigure)
 
         for pos in self.structure:
             dx, dy = pos

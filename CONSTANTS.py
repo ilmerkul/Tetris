@@ -39,10 +39,14 @@ sprites_and_jpgs = cur.execute("SELECT * FROM SPRITES").fetchall()
 
 BEST_SCORE = scores = cur.execute(f"SELECT MAX(score) FROM SCORES").fetchone()[0]
 
-sqr1 = sprites_and_jpgs[0][2]
-sqr2 = sprites_and_jpgs[1][2]
-sqr3 = sprites_and_jpgs[2][2]
-hist_backg = sprites_and_jpgs[3][2]
-start_backg = sprites_and_jpgs[4][2]
+sprs = sprites_and_jpgs[:-3]
+sprites = []
+for i in range(0, len(sprs), 3):
+    sprites.append((sprs[i][2], sprs[i + 1][2], sprs[i + 2][2]))
+hist_backg = sprites_and_jpgs[-3][2]
+start_backg = sprites_and_jpgs[-2][2]
+settings_backg = sprites_and_jpgs[-1][2]
+
+
 
 con.commit()
