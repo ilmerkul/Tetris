@@ -1,5 +1,4 @@
 import sqlite3
-
 import pygame
 import pygame_gui
 
@@ -17,6 +16,8 @@ scale = 30
 W, H = 10, 20
 TOP = 30
 LEFT = 30
+
+time_delta = clock.tick(60) / 1000.0
 
 figuresPos = [[(-1, 0), (-2, 0), (0, 0), (1, 0)],
               [(0, -1), (-1, -1), (-1, 0), (0, 0)],
